@@ -1,0 +1,104 @@
+version: "3.8"
+services:
+
+  mysql-db:
+    image: mysql:latest
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    restart: always
+    container_name: mysql-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: f4x4d8p6
+      MYSQL_DATABASE: metabase
+      MYSQL_USER: metabase
+      MYSQL_PASSWORD: f4x4d8p6
+
+  metabase-app:
+    image: metabase/metabase
+    restart: always
+    container_name: metabase-app
+    ports:
+      - "3001:3000"
+    volumes:
+      # declare your mount volume /host/dir:/container/dir
+      - ./metabase-data:/metabase-data
+    environment:
+      MB_DB_TYPE: mysql
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 3306
+      MB_DB_USER: root
+      MB_DB_PASS: f4x4d8p6
+      MB_DB_HOST: mysql-db
+#      MB_DB_HOST: dhiego-lifebook-a357
+  #    depends_on:
+  #      - mysql-db
+  #    links:
+  #      - mysql-db
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
+    container_name: phpmyadmin
+    #    links:
+    #      - mysql-db
+    environment:
+#      PMA_HOST: mysql-db
+      PMA_HOST: dhiego-lifebook-a357
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    ports:
+      - "8185:80"
+
+  chrome:
+    image: selenium/node-chrome:latest
+    restart: always
+    shm_size: 2gb
+    container_name: chrome
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+
+  selenium-hub:
+    image: selenium/hub:latest
+    restart: always
+    container_name: selenium-hub
+    ports:
+      - "4442:4442"
+      - "4443:4443"
+      - "4444:4444"
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: always
+    container_name: grafana
+    ports:
+      - "3000:3000"
+
+  openhab:
+    image: "openhab/openhab:latest"
+    restart: always
+    network_mode: host
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "openhab_addons:/openhab/addons"
+      - "openhab_conf:/openhab/conf"
+      - "openhab_userdata:/openhab/userdata"
+    environment:
+      CRYPTO_POLICY: "unlimited"
+      EXTRA_JAVA_OPTS: "-Duser.timezone=Europe/Berlin"
+      OPENHAB_HTTP_PORT: "8080"
+      OPENHAB_HTTPS_PORT: "8443"
+
+volumes:
+  openhab_addons:
+    driver: local
+  openhab_conf:
+    driver: local
+  openhab_userdata:
+    driver: local
