@@ -79,6 +79,13 @@ services:
     ports:
       - "3000:3000"
 
+  libreoffice:
+      image: libreoffice/online:latest
+      restart: always
+      container_name: libreoffice
+      ports:
+        - "2222:80"
+
   openhab:
     image: "openhab/openhab:latest"
     restart: always
